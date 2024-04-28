@@ -135,7 +135,7 @@ const TableView = () => {
           </div>
         ) : (
           <button
-            className="absolute right-0 top-0 m-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            className="absolute right-0 top-0 m-4 bg-backy text-white hover:bg-gray-600 py-1 px-4 rounded-md"
             onClick={() => router.push('/login')}
           >
             Log In

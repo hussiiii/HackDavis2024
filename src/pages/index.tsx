@@ -15,7 +15,7 @@ export default function Home() {
       },
       body: JSON.stringify(newUser),
     }).then((response) => {
-      console.log("Done woww")
+      console.log("Done wow")
     })
   }
 

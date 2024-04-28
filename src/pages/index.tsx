@@ -4,9 +4,10 @@ import "../app/globals.css";
 export default function Home() {
   function createUser() {
     const newUser = {
-      username: "goody",
-      email: "blue@hello.com",
-      phone: "11111111"
+               //Altryee ygshahes
+      username: "Admin",
+      email: "admin@hello.com",
+      phone: "237424378234"
     }
     fetch(`/api/users`, {
       method: 'POST',

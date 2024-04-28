@@ -5,6 +5,8 @@ const TableView = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedShiftId, setSelectedShiftId] = useState("");
   const rowsPerPage = 7;
 
 
@@ -41,7 +43,7 @@ const TableView = () => {
       return prev === lastPage ? 1 : prev + 1;
     });
   };
-  
+
   const handlePrevious = () => {
     setCurrentPage(prev => {
       // If the current page is the first page, loop back to the last page
@@ -49,6 +51,25 @@ const TableView = () => {
       return prev === 1 ? lastPage : prev - 1;
     });
   };
+
+  const assignShift = (userId:String, shiftId:String) => {
+    if (!selectedUserId || !selectedShiftId) {
+      alert('Please select a user and shift.');
+      return;
+    }
+
+    fetch(`/api/users`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        shiftId
+      }),
+    }).then((response) => {console.log("Success!")})
+    .catch(() => console.log("Fail :("));
+  }
 
   return (
     <div>
@@ -71,7 +92,10 @@ const TableView = () => {
                 {shift.volunteer || (
                   <button
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                      setSelectedShiftId(shift.shift_id);
+                      setIsModalOpen(true);
+                    }}
                   >
                     Assign
                   </button>
@@ -98,22 +122,29 @@ const TableView = () => {
               </div>
               <h3 className="text-lg leading-6 font-medium text-gray-900">Assign Volunteer</h3>
               <div className="mt-2 px-7 py-3">
-                <select className="form-select block w-full mt-1 border-gray-300">
+                <select className="form-select block w-full mt-1 border-gray-300" onChange={(e) => setSelectedUserId(e.target.value)}>
                   {users.map(user => (
-                    <option key={user.id} value={user.username}>{user.username}</option>
+                    <option key={user.id} value={user.id}>{user.username}</option>
                   ))}
                 </select>
               </div>
               <div className="items-center px-4 py-3">
                 <button
                   className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    assignShift(selectedUserId, selectedShiftId)
+                    setIsModalOpen(false);
+                    setSelectedShiftId("")
+                  }}
                 >
                   Confirm
                 </button>
                 <button
                   className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false)
+                    setSelectedShiftId("")
+                  }}
                 >
                   Close
                 </button>

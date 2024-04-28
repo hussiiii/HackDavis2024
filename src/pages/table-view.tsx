@@ -4,6 +4,8 @@ import { auth } from '../firebase-config';
 import { signOut } from "firebase/auth";
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import NavBar from '@/components/NavBar';
+
 
 
 const TableView = () => {
@@ -122,38 +124,24 @@ const TableView = () => {
   };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-        {user ? (
-          <div className="absolute right-0 top-0 m-4">
-            <span className="text-white bg-backy py-2 px-4 rounded">Welcome, {user.email}</span>
-            <button
-              className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              onClick={logOut}
-            >
-              Log Out
-            </button>
-          </div>
-        ) : (
-          <button
-            className="absolute right-0 top-0 m-4 bg-backy text-white hover:bg-gray-600 py-1 px-4 rounded-md"
-            onClick={() => router.push('/login')}
-          >
-            Log In
-          </button>
-      )}
+    <div className="p-8 max-w-6xl mx-auto">
+      <NavBar />
+
       <div className="flex flex-col items-start mb-4"> {/* Changed to items-start for left alignment */}
-        <img src="/images.png" alt="Decorative Image" className="mb-4 w-20 h-20 rounded-md" /> {/* Image at the top */}
         {user && user.email !== "admin@hello.com" && (
-          <div className="p-4 bg-white border border-grey-200 my-4 rounded mb-24">
-            <h3 className="text-xl font-semibold">
+          <div style={{ width: '50%' }} className="p-4 bg-white border border-grey-200 my-4 rounded mb-24">
+            <h3 className="text-xl mb-5">
               Your next upcoming shift is: {
                 isNaN(new Date(nextShift?.date).getTime()) ? 
                 "You have no scheduled shifts" : 
-                new Date(nextShift?.date).toLocaleDateString()
+                <span style={{ fontWeight: 'bold' }}>{new Date(nextShift?.date).toLocaleDateString()}</span>
               }
             </h3>
+            <p className="mb-5" style={{ fontSize: '14px', color: 'grey' }}>
+              Don't forget to clock in at the start of your shift to record your hours. If you have any questions please consult the volunteer website and then reach out if you need more support. Have a great shift!
+            </p>
             <button
-              className="bg-backy text-white hover:bg-gray-600 py-1 px-40 rounded-md"
+              className="bg-backy text-white hover:bg-gray-600 py-1 px-56 rounded-md"
               onClick={() => setIsClockedIn(!isClockedIn)}
             >
               {isClockedIn ? 'Clock Out' : 'Clock In'}
@@ -267,7 +255,7 @@ const TableView = () => {
                   Confirm
                 </button>
                 <button
-                  className="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  className="px-4 py-2 bg-red-100 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
                   onClick={() => setIsModalOpen(false)}
                 >
                   Close

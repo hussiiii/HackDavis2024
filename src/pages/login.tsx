@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase-config";
+import { useRouter } from 'next/router';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  const router = useRouter();
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,14 +17,16 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('Logged in user:', userCredential.user);
       // Redirect or perform additional actions after successful login
+      router.push('/table-view');
     } catch (error: any) {
       setError(error.message);
     }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <form onSubmit={signIn} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <form onSubmit={signIn} className="w-full max-w-sm p-8 bg-white rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">Sign In</h2>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
             Email

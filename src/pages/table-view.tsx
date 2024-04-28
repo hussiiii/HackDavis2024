@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/components/useAuth';
+import { auth } from '../firebase-config'; 
+import { signOut } from "firebase/auth";
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+
 
 const TableView = () => {
   const [dates, setDates] = useState<any[]>([]);
@@ -6,29 +12,68 @@ const TableView = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 7;
+  const [selectedUser, setSelectedUser] = useState('');
+  const [editingShiftId, setEditingShiftId] = useState(null);
+  const [currentWeek, setCurrentWeek] = useState(1);
+  const [todayVolunteers, setTodayVolunteers] = useState('');
+  const [nextShift, setNextShift] = useState<any>(null);
+  const [isClockedIn, setIsClockedIn] = useState(false);
+
+
+  const user = useAuth();
+  const router = useRouter();
+
+
+    // Function to check if the user is an admin
+  const isAdmin = user && user.email === "admin@hello.com";
 
 
   // Fetch shifts data from the server
-  useEffect(() => {
+  const fetchShifts = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize the time part to ensure correct comparison
+  
     fetch(`/api/shifts`)
       .then(response => response.json())
       .then(data => {
-        // Sort the data by date
-        const sortedData = data.sort((a:any, b:any) => new Date(a.date) - new Date(b.date));
-        // Format dates on the client side to include the day of the week
+        const sortedData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
         const formattedData = sortedData.map((shift:any) => ({
           ...shift,
-          formattedDate: `${new Date(shift.date).toLocaleDateString('en-US', { weekday: 'long' })} - ${new Date(shift.date).toLocaleDateString()}`
+          formattedDate: `${new Date(shift.date).toLocaleDateString('en-US', { weekday: 'long' })} - ${new Date(shift.date).toLocaleDateString()}`,
+          volunteer: shift.UserShifts.map((us:any) => us.User.username).join(', ')
         }));
-        setDates(formattedData);
-      })
-      .catch(error => console.error('Error fetching shifts:', error));
+        setDates(formattedData); // Continue to set all shifts
+  
+        // Filter out today's shifts for displaying today's volunteers
+      const todayShifts = formattedData.filter((shift: any) => {
+        const shiftDate = new Date(shift.date);
+        shiftDate.setHours(0, 0, 0, 0);
+        return shiftDate.getTime() === today.getTime();
+      });
 
-      fetch(`/api/users`)
+      if (todayShifts.length > 0) {
+        setTodayVolunteers(todayShifts.map((shift: any) => shift.volunteer).join(', '));
+      } else {
+        setTodayVolunteers('No volunteers scheduled for today');
+      }
+
+      if (user && user.email !== "admin@hello.com") {
+        const userShifts = data.filter(shift => shift.UserShifts.some(us => us.User.email === user.email));
+        const earliestShift = userShifts.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+        setNextShift(earliestShift);
+      }
+    })
+      .catch(error => console.error('Error fetching shifts:', error));
+  };
+
+  useEffect(() => {
+    fetchShifts();
+
+    fetch(`/api/users`)
       .then(response => response.json())
       .then(setUsers)
       .catch(console.error);
-  }, []);
+  }, [user]);
 
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
@@ -36,56 +81,154 @@ const TableView = () => {
 
   const handleNext = () => {
     setCurrentPage(prev => {
-      // If the current page is the last page, loop back to the first page
       const lastPage = Math.ceil(dates.length / rowsPerPage);
-      return prev === lastPage ? 1 : prev + 1;
+      const newPage = prev === lastPage ? 1 : prev + 1;
+      setCurrentWeek(current => current === 4 ? 1 : current + 1);
+      return newPage;
     });
   };
   
   const handlePrevious = () => {
     setCurrentPage(prev => {
-      // If the current page is the first page, loop back to the last page
       const lastPage = Math.ceil(dates.length / rowsPerPage);
-      return prev === 1 ? lastPage : prev - 1;
+      const newPage = prev === 1 ? lastPage : prev - 1;
+      setCurrentWeek(current => current === 1 ? 4 : current - 1);
+      return newPage;
     });
   };
 
+  const removeVolunteer = async (shiftId: number, userId: number) => {
+    const response = await fetch('/api/shifts', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shift_id: shiftId, user_id: userId })
+    });
+    if (response.ok) {
+      fetchShifts();  // Refetch shifts data
+    } else {
+      console.error('Error removing volunteer:', await response.json());
+    }
+  };
+
+  const logOut = async () => {
+    try {
+      await signOut(auth);
+      console.log('User logged out successfully');
+      // Redirect to login page or root after logging out
+      router.push('/table-view'); 
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  };
+
   return (
-    <div>
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="p-8 max-w-4xl mx-auto">
+        {user ? (
+          <div className="absolute right-0 top-0 m-4">
+            <span className="text-white bg-backy py-2 px-4 rounded">Welcome, {user.email}</span>
+            <button
+              className="ml-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              onClick={logOut}
+            >
+              Log Out
+            </button>
+          </div>
+        ) : (
+          <button
+            className="absolute right-0 top-0 m-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => router.push('/login')}
+          >
+            Log In
+          </button>
+      )}
+      <div className="flex flex-col items-start mb-4"> {/* Changed to items-start for left alignment */}
+        <img src="/images.png" alt="Decorative Image" className="mb-4 w-20 h-20 rounded-md" /> {/* Image at the top */}
+        {user && user.email !== "admin@hello.com" && (
+          <div className="p-4 bg-white border border-grey-200 my-4 rounded mb-24">
+            <h3 className="text-xl font-semibold">
+              Your next upcoming shift is: {
+                isNaN(new Date(nextShift?.date).getTime()) ? 
+                "You have no scheduled shifts" : 
+                new Date(nextShift?.date).toLocaleDateString()
+              }
+            </h3>
+            <button
+              className="bg-backy text-white hover:bg-gray-600 py-1 px-40 rounded-md"
+              onClick={() => setIsClockedIn(!isClockedIn)}
+            >
+              {isClockedIn ? 'Clock Out' : 'Clock In'}
+            </button>
+          </div>
+        )}
+        <span className="text-lg font-semibold mb-4 text-green-800">SCHEDULED FOR TODAY: <span className="bg-backy text-white px-2 py-1 rounded-full">{todayVolunteers.length > 0 ? todayVolunteers : 'No volunteers scheduled for today'}</span></span>
+        <span className="text-lg font-semibold bg-greeny py-1 px-4 rounded-md">Week {currentWeek}</span> {/* Week text */}
+      </div>
+      <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+        <thead className="bg-greeny">
           <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volunteers</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">Date</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">Time</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">Status</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-black uppercase tracking-wider">Volunteers</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {currentRows.map(shift => (
-            <tr key={shift.shift_id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{shift.formattedDate}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">7:30PM - 8:00PM</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">null</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {shift.volunteer || (
+        {currentRows.map(shift => (
+          <tr key={shift.shift_id}>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shift.formattedDate}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">7:30PM - 8:00PM</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {shift.volunteer?.length > 0 ? (
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                  Assigned
+                </span>
+              ) : (
+                <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                  Unassigned
+                </span>
+              )}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <div className="flex flex-col space-y-1">
+            {shift.volunteer && shift.volunteer.split(', ').map((volunteer: any, index: any) => (
+            volunteer.trim() !== "" && (
+              <div className="flex items-center space-x-2">
+                <span className="bg-backy text-white px-2 py-1 rounded-full">
+                  {volunteer}
+                </span>
+                {isAdmin && (
                   <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-                    onClick={() => setIsModalOpen(true)}
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => removeVolunteer(shift.shift_id, users.find(u => u.username === volunteer).user_id)}
                   >
-                    Assign
+                    X
                   </button>
                 )}
-              </td>
-            </tr>
+              </div>
+            )
           ))}
+          <div className="flex items-center"> 
+          {isAdmin && (
+            <button
+              className="bg-green-200 hover:bg-green-400 text-black px-12 py-1 rounded-full text-black"
+              onClick={() => { setIsModalOpen(true); setEditingShiftId(shift.shift_id); }}
+            >
+              Add
+            </button>
+          )}
+          </div>
+
+            </div>
+          </td>
+          </tr>
+        ))}
         </tbody>
       </table>
       <div className="flex justify-end mt-4">
-        <button onClick={handlePrevious} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-l">
+        <button onClick={handlePrevious} className="bg-white border border-gray-200 hover:bg-gray-400 text-black py-1 px-2 rounded-md mx-3">
           Previous
         </button>
-        <button onClick={handleNext} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-r">
+        <button onClick={handleNext} className="bg-backy text-white hover:bg-gray-600 py-1 px-4 rounded-md">
           Next
         </button>
       </div>
@@ -98,16 +241,28 @@ const TableView = () => {
               </div>
               <h3 className="text-lg leading-6 font-medium text-gray-900">Assign Volunteer</h3>
               <div className="mt-2 px-7 py-3">
-                <select className="form-select block w-full mt-1 border-gray-300">
-                  {users.map(user => (
-                    <option key={user.id} value={user.username}>{user.username}</option>
+                <select onChange={(e) => setSelectedUser(e.target.value)} className="form-select block w-full mt-1 border-gray-300">
+                  {users.filter(user => user.username !== "Admin").map(user => (
+                    <option key={user.user_id} value={user.user_id}>{user.username}</option>
                   ))}
                 </select>
               </div>
               <div className="items-center px-4 py-3">
                 <button
                   className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={async () => {
+                    const response = await fetch('/api/shifts', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ shift_id: editingShiftId, user_id: selectedUser })
+                    });
+                    if (response.ok) {
+                      fetchShifts();  // Refetch shifts data
+                      setIsModalOpen(false);
+                    } else {
+                      console.error('Failed to add volunteer:', await response.json());
+                    }
+                  }}
                 >
                   Confirm
                 </button>

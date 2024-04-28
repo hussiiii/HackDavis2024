@@ -11,13 +11,14 @@ model User {
   user_id     Int       @id @default(autoincrement())
   username    String    @unique
   email       String    @unique
+  phone       String?   @unique
   UserShifts  UserShift[]
 }
 
 model Shift {
   shift_id    Int       @id @default(autoincrement())
-  shift_start DateTime
-  shift_end   DateTime
+  week        Int
+  day         String
   UserShifts  UserShift[]
 }
 
@@ -25,7 +26,6 @@ model UserShift {
   usershift_id Int       @id @default(autoincrement())
   user_id      Int
   shift_id     Int
-  role         String?   // Optional role or status
   User         User      @relation(fields: [user_id], references: [user_id])
   Shift        Shift     @relation(fields: [shift_id], references: [shift_id])
 

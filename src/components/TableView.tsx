@@ -138,7 +138,7 @@ const TableView = () => {
               }
             </h3>
             <p className="mb-5" style={{ fontSize: '14px', color: 'grey' }}>
-              Don't forget to clock in at the start of your shift to record your hours. If you have any questions please consult the volunteer website and then reach out if you need more support. Have a great shift!
+              Do not forget to clock in at the start of your shift to record your hours. If you have any questions please consult the volunteer website and then reach out if you need more support. Have a great shift!
             </p>
             <button
               className="bg-backy text-white hover:bg-gray-600 py-1 px-56 rounded-md"
@@ -179,22 +179,22 @@ const TableView = () => {
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
             <div className="flex flex-col space-y-1">
             {shift.volunteer && shift.volunteer.split(', ').map((volunteer: any, index: any) => (
-            volunteer.trim() !== "" && (
-              <div className="flex items-center space-x-2">
-                <span className="bg-backy text-white px-2 py-1 rounded-full">
-                  {volunteer}
-                </span>
-                {isAdmin && (
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => removeVolunteer(shift.shift_id, users.find(u => u.username === volunteer).user_id)}
-                  >
-                    X
-                  </button>
-                )}
-              </div>
-            )
-          ))}
+              volunteer.trim() !== "" && (
+                <div key={index} className="flex items-center space-x-2"> 
+                  <span className="bg-backy text-white px-2 py-1 rounded-full">
+                    {volunteer}
+                  </span>
+                  {isAdmin && (
+                    <button
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => removeVolunteer(shift.shift_id, users.find(u => u.username === volunteer).user_id)}
+                    >
+                      X
+                    </button>
+                  )}
+                </div>
+              )
+            ))}
           <div className="flex items-center"> 
           {isAdmin && (
             <button

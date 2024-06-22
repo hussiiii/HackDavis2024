@@ -17,7 +17,7 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('Logged in user:', userCredential.user);
       // Redirect or perform additional actions after successful login
-      router.push('/table-view');
+      router.push('/');
     } catch (error: any) {
       setError(error.message);
     }

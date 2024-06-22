@@ -61,7 +61,7 @@ export default async function handler(req: any, res: any) {
           });
       
           return res.status(200).json(updatedShift);
-        } catch (error) {
+        } catch (error:any) {
           console.error('Failed to add new volunteer:', error);
           return res.status(500).json({ message: "Internal server error", error: error.message });
         }
@@ -83,7 +83,7 @@ export default async function handler(req: any, res: any) {
             });
         
             return res.status(200).json({ message: "Volunteer removed from shift" });
-          } catch (error) {
+          } catch (error:any) {
             console.error('Failed to remove volunteer:', error);
             return res.status(500).json({ message: "Internal server error", error: error.message });
           }

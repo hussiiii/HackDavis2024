@@ -38,7 +38,7 @@ const TableView = () => {
     fetch(`/api/shifts`)
       .then(response => response.json())
       .then(data => {
-        const sortedData = data.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const sortedData = data.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)));
         const formattedData = sortedData.map((shift:any) => ({
           ...shift,
           formattedDate: `${new Date(shift.date).toLocaleDateString('en-US', { weekday: 'long' })} - ${new Date(shift.date).toLocaleDateString()}`,
@@ -60,8 +60,8 @@ const TableView = () => {
       }
 
       if (user && user.email !== "admin@hello.com") {
-        const userShifts = data.filter(shift => shift.UserShifts.some(us => us.User.email === user.email));
-        const earliestShift = userShifts.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+        const userShifts = data.filter((shift:any) => shift.UserShifts.some((us:any) => us.User.email === user.email));
+        const earliestShift = userShifts.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)))[0];
         setNextShift(earliestShift);
       }
     })

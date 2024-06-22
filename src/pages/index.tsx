@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import "../app/globals.css";
+import TableView from '../components/TableView';
 
 export default function Home() {
   function createUser() {
@@ -22,10 +23,11 @@ export default function Home() {
 
   return (
     <div>
-      <div className="mt-8 text-center">
+      {/* <div className="mt-8 text-center">
         <h1 className="text-2xl font-bold">Welcome to the Home Page</h1>
         <button onClick={createUser}>Click Me</button>
-      </div>
+      </div> */}
+      <TableView />
     </div>
 
   );

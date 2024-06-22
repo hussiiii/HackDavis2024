@@ -22,10 +22,16 @@ const NavBar = () => {
       <img src="/images.png" alt="Decorative Image" className="w-20 h-20" />
       {user ? (
         <div className="relative group">
-          <div className="w-10 h-10 rounded-full bg-backy text-white flex items-center justify-center text-lg font-bold cursor-pointer">
-            {user.email[0].toUpperCase()}
-          </div>
-          <div className="absolute right-0 top-full mt-2 hidden group-hover:block">
+          {user && user.email ? (
+            <div className="w-10 h-10 rounded-full bg-backy text-white flex items-center justify-center text-lg font-bold cursor-pointer">
+              {user.email[0].toUpperCase()}
+            </div>
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-backy text-white flex items-center justify-center text-lg font-bold cursor-pointer">
+              U
+            </div>
+          )}
+          <div className="absolute right-0 top-full hidden group-hover:block">
             <button onClick={logOut} className="bg-red-100 text-red-800 hover:bg-red-200 font-bold py-1 px-4 rounded text-sm">
               Logout
             </button>

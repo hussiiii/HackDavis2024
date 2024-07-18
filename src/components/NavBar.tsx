@@ -17,6 +17,10 @@ const NavBar = () => {
     }
   };
 
+  const handleProfileSettings = () => {
+    router.push('/profile');
+  };
+
   return (
     <div className="flex justify-between items-center p-4">
       <img src="/images.png" alt="Decorative Image" className="w-20 h-20" />
@@ -35,6 +39,9 @@ const NavBar = () => {
             <button onClick={logOut} className="bg-red-100 text-red-800 hover:bg-red-200 font-bold py-1 px-4 rounded text-sm">
               Logout
             </button>
+            <button onClick={handleProfileSettings} className="bg-gray-400 text-white hover:bg-gray-600 font-bold py-1 px-4 rounded text-sm">
+              Profile
+              </button>
           </div>
         </div>
       ) : (

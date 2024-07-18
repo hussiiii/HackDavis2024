@@ -12,6 +12,7 @@ model User {
   username    String    @unique
   email       String    @unique
   phone       String?   @unique
+  availability String?  @default("") 
   UserShifts  UserShift[]
 }
 

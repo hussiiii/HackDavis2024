@@ -6,8 +6,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
 
-
-
 const TableView = () => {
   const [dates, setDates] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
@@ -20,15 +18,13 @@ const TableView = () => {
   const [todayVolunteers, setTodayVolunteers] = useState('');
   const [nextShift, setNextShift] = useState<any>(null);
   const [isClockedIn, setIsClockedIn] = useState(false);
-
+  const [username, setUsername] = useState('');
 
   const user = useAuth();
   const router = useRouter();
 
-
-    // Function to check if the user is an admin
+  // Function to check if the user is an admin
   const isAdmin = user && user.email === "admin@hello.com";
-
 
   // Fetch shifts data from the server
   const fetchShifts = () => {
@@ -47,28 +43,39 @@ const TableView = () => {
         setDates(formattedData); // Continue to set all shifts
   
         // Filter out today's shifts for displaying today's volunteers
-      const todayShifts = formattedData.filter((shift: any) => {
-        const shiftDate = new Date(shift.date);
-        shiftDate.setHours(0, 0, 0, 0);
-        return shiftDate.getTime() === today.getTime();
-      });
+        const todayShifts = formattedData.filter((shift: any) => {
+          const shiftDate = new Date(shift.date);
+          shiftDate.setHours(0, 0, 0, 0);
+          return shiftDate.getTime() === today.getTime();
+        });
 
-      if (todayShifts.length > 0) {
-        setTodayVolunteers(todayShifts.map((shift: any) => shift.volunteer).join(', '));
-      } else {
-        setTodayVolunteers('No volunteers scheduled for today');
-      }
+        if (todayShifts.length > 0) {
+          setTodayVolunteers(todayShifts.map((shift: any) => shift.volunteer).join(', '));
+        } else {
+          setTodayVolunteers('No volunteers scheduled for today');
+        }
 
-      if (user && user.email !== "admin@hello.com") {
-        const userShifts = data.filter((shift:any) => shift.UserShifts.some((us:any) => us.User.email === user.email));
-        const earliestShift = userShifts.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)))[0];
-        setNextShift(earliestShift);
-      }
-    })
+        if (user && user.email !== "admin@hello.com") {
+          const userShifts = data.filter((shift:any) => shift.UserShifts.some((us:any) => us.User.email === user.email));
+          const earliestShift = userShifts.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)))[0];
+          setNextShift(earliestShift);
+        }
+      })
       .catch(error => console.error('Error fetching shifts:', error));
   };
 
   useEffect(() => {
+
+    if (user) {
+      // fetch specific info of logged-in user (specifically their username)
+      fetch(`/api/getUserInfo?email=${user.email}`)
+        .then(response => response.json())
+        .then(data => {
+          setUsername(data.username);
+        })
+        .catch(error => console.error('Error fetching user data:', error));
+    }
+
     fetchShifts();
 
     fetch(`/api/users`)
@@ -89,7 +96,7 @@ const TableView = () => {
       return newPage;
     });
   };
-  
+
   const handlePrevious = () => {
     setCurrentPage(prev => {
       const lastPage = Math.ceil(dates.length / rowsPerPage);
@@ -112,14 +119,17 @@ const TableView = () => {
     }
   };
 
-  const logOut = async () => {
-    try {
-      await signOut(auth);
-      console.log('User logged out successfully');
-      // Redirect to login page or root after logging out
-      router.push('/table-view'); 
-    } catch (error) {
-      console.error('Logout failed', error);
+  const assignVolunteer = async () => {
+    const response = await fetch('/api/shifts', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ shift_id: editingShiftId, user_id: selectedUser })
+    });
+    if (response.ok) {
+      fetchShifts();  // Refetch shifts data
+      setIsModalOpen(false);
+    } else {
+      console.error('Failed to add volunteer:', await response.json());
     }
   };
 
@@ -129,6 +139,8 @@ const TableView = () => {
 
       <div className="flex flex-col items-start mb-4"> {/* Changed to items-start for left alignment */}
         {user && user.email !== "admin@hello.com" && (
+          <>
+          <h1 className="text-4xl font-bold mb-4">Welcome back, {username} 👋 </h1>
           <div style={{ width: '50%' }} className="p-4 bg-white border border-grey-200 my-4 rounded mb-24">
             <h3 className="text-xl mb-5">
               Your next upcoming shift is: {
@@ -147,6 +159,7 @@ const TableView = () => {
               {isClockedIn ? 'Clock Out' : 'Clock In'}
             </button>
           </div>
+          </>
         )}
         <span className="text-lg font-semibold mb-4 text-green-800">SCHEDULED FOR TODAY: <span className="bg-backy text-white px-2 py-1 rounded-full">{todayVolunteers.length > 0 ? todayVolunteers : 'No volunteers scheduled for today'}</span></span>
         <span className="text-lg font-semibold bg-greeny py-1 px-4 rounded-md">Week {currentWeek}</span> {/* Week text */}
@@ -238,19 +251,7 @@ const TableView = () => {
               <div className="items-center px-4 py-3">
                 <button
                   className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
-                  onClick={async () => {
-                    const response = await fetch('/api/shifts', {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ shift_id: editingShiftId, user_id: selectedUser })
-                    });
-                    if (response.ok) {
-                      fetchShifts();  // Refetch shifts data
-                      setIsModalOpen(false);
-                    } else {
-                      console.error('Failed to add volunteer:', await response.json());
-                    }
-                  }}
+                  onClick={assignVolunteer}
                 >
                   Confirm
                 </button>

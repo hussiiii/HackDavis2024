@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import NavBar from '@/components/NavBar';
 import { useAuth } from '@/components/useAuth';
 import { useRouter } from 'next/router';
+import Footer from '@/components/Footer';
+
 
 const Profile = () => {
   const [username, setUsername] = useState('');
@@ -64,6 +66,7 @@ const Profile = () => {
   };
 
   return (
+    <>
     <div className="p-8 max-w-4xl mx-auto">
       <NavBar />
       <div className="mt-8">
@@ -124,6 +127,8 @@ const Profile = () => {
         </button>
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 

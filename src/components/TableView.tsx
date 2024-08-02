@@ -5,6 +5,7 @@ import { signOut } from "firebase/auth";
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
+import Footer from './Footer';
 
 const TableView = () => {
   const [dates, setDates] = useState<any[]>([]);

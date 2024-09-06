@@ -5,7 +5,7 @@ const DatesPage = () => {
   const handleGenerateDates = async () => {
     try {
       const response = await axios.post('/api/generateTableDates', {
-        startDate: '2024-07-15', // Set your desired starting date here
+        startDate: '2024-09-26', // Set your desired starting date here
       });
       console.log(response.data.message);
     } catch (error) {

@@ -2,6 +2,8 @@
 // what it does is, it will update the dates in the Shift table. So when AggieHouse wants to 
   // go to the next quarter or whatever, and the dates change, this script changes them!
 
+  // if it glitches, you need to like re-copy/paste the fetchShifts function for some reason 
+
 import { PrismaClient } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -19,7 +21,7 @@ async function updateShifts(startDate: Date) {
       // Find the shift for the specific week and day
       const shift = await prisma.shift.findFirst({
         where: { week: i + 1 },
-        orderBy: { date: 'asc' },
+        orderBy: { shift_id: 'asc' }, // Ensure consistent ordering
         skip: j,
       });
 

@@ -32,3 +32,23 @@ model UserShift {
 
   @@unique([user_id, shift_id])
 }
+
+model ClockIn {
+  clockin_id   Int       @id @default(autoincrement())
+  date         DateTime
+  volunteer    String
+  covolunteer  String
+  onTime       String
+  comments     String
+}
+
+model ClockOut {
+  clockout_id     Int       @id @default(autoincrement())
+  date            DateTime
+  volunteer       String
+  rating          String
+  comments        String
+  tasksCompleted  String
+  items           String
+  reachOut        String
+}

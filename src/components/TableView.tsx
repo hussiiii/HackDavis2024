@@ -18,7 +18,6 @@ const TableView = () => {
   const [currentWeek, setCurrentWeek] = useState(1);
   const [todayVolunteers, setTodayVolunteers] = useState('');
   const [nextShift, setNextShift] = useState<any>(null);
-  const [isClockedIn, setIsClockedIn] = useState(false);
   const [username, setUsername] = useState('');
 
   const user = useAuth();
@@ -35,12 +34,20 @@ const TableView = () => {
     fetch(`/api/shifts`)
       .then(response => response.json())
       .then(data => {
+        console.log('Raw data:', data); // Log raw data
+  
         const sortedData = data.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)));
-        const formattedData = sortedData.map((shift:any) => ({
-          ...shift,
-          formattedDate: `${new Date(shift.date).toLocaleDateString('en-US', { weekday: 'long' })} - ${new Date(shift.date).toLocaleDateString()}`,
-          volunteer: shift.UserShifts.map((us:any) => us.User.username).join(', ')
-        }));
+        const formattedData = sortedData.map((shift: any) => {
+          const shiftDate = new Date(shift.date);
+          return {
+            ...shift,
+            formattedDate: `${shiftDate.toLocaleDateString('en-US', { weekday: 'long' })} - ${shiftDate.toLocaleDateString()}`,
+            volunteer: shift.UserShifts.map((us: any) => us.User.username).join(', ')
+          };
+        });
+  
+        console.log('Formatted data:', formattedData); // Log formatted data
+  
         setDates(formattedData); // Continue to set all shifts
   
         // Filter out today's shifts for displaying today's volunteers
@@ -49,15 +56,15 @@ const TableView = () => {
           shiftDate.setHours(0, 0, 0, 0);
           return shiftDate.getTime() === today.getTime();
         });
-
+  
         if (todayShifts.length > 0) {
           setTodayVolunteers(todayShifts.map((shift: any) => shift.volunteer).join(', '));
         } else {
           setTodayVolunteers('No volunteers scheduled for today');
         }
-
+  
         if (user && user.email !== "admin@hello.com") {
-          const userShifts = data.filter((shift:any) => shift.UserShifts.some((us:any) => us.User.email === user.email));
+          const userShifts = data.filter((shift: any) => shift.UserShifts.some((us: any) => us.User.email === user.email));
           const earliestShift = userShifts.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)))[0];
           setNextShift(earliestShift);
         }
@@ -134,6 +141,7 @@ const TableView = () => {
     }
   };
 
+
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <NavBar />
@@ -153,12 +161,20 @@ const TableView = () => {
             <p className="mb-5" style={{ fontSize: '14px', color: 'grey' }}>
               Do not forget to clock in at the start of your shift to record your hours. If you have any questions please consult the volunteer website and then reach out if you need more support. Have a great shift!
             </p>
+            <div className="flex space-x-4">
             <button
-              className="bg-backy text-white hover:bg-gray-600 py-1 px-56 rounded-md"
-              onClick={() => setIsClockedIn(!isClockedIn)}
+              className="bg-backy text-white hover:bg-gray-600 py-1 px-4 rounded-md"
+              onClick={()=> router.push('/clockin')}
             >
-              {isClockedIn ? 'Clock Out' : 'Clock In'}
+              Clock In
             </button>
+            <button
+              className="bg-backy text-white hover:bg-gray-600 py-1 px-4 rounded-md"
+              onClick={()=> router.push('/clockout')}
+            >
+              Clock Out
+            </button>
+          </div>
           </div>
           </>
         )}

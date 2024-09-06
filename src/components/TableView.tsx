@@ -19,6 +19,7 @@ const TableView = () => {
   const [todayVolunteers, setTodayVolunteers] = useState('');
   const [nextShift, setNextShift] = useState<any>(null);
   const [username, setUsername] = useState('');
+  const [userShifts, setUserShifts] = useState<any[]>([]);
 
   const user = useAuth();
   const router = useRouter();
@@ -67,6 +68,7 @@ const TableView = () => {
           const userShifts = data.filter((shift: any) => shift.UserShifts.some((us: any) => us.User.email === user.email));
           const earliestShift = userShifts.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)))[0];
           setNextShift(earliestShift);
+          setUserShifts(userShifts); // Set user shifts
         }
       })
       .catch(error => console.error('Error fetching shifts:', error));
@@ -141,6 +143,10 @@ const TableView = () => {
     }
   };
 
+  const requestSwap = (shiftId: number) => {
+    // Implement the logic for requesting a shift swap
+    console.log(`Requesting swap for shift ID: ${shiftId}`);
+  };
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -150,12 +156,17 @@ const TableView = () => {
         {user && user.email !== "admin@hello.com" && (
           <>
           <h1 className="text-4xl font-bold mb-4">Welcome back, {username} 👋 </h1>
-          <div style={{ width: '50%' }} className="p-4 bg-white border border-grey-200 my-4 rounded mb-24">
-            <h3 className="text-xl mb-5">
-              Your next upcoming shift is: {
+          <div style={{ width: '50%' }} className="p-4 bg-white border border-grey-200 my-4 rounded mb-4">
+            <h3 className="text-3xl mb-5">
+              Your next shift is {
                 isNaN(new Date(nextShift?.date).getTime()) ? 
                 "You have no scheduled shifts" : 
-                <span style={{ fontWeight: 'bold' }}>{new Date(nextShift?.date).toLocaleDateString()}</span>
+                <span className="text-backy" style={{ fontWeight: 'bold' }}>
+                  {new Date(nextShift?.date).toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'short',
+                  day: 'numeric',
+                })}</span>
               }
             </h3>
             <p className="mb-5" style={{ fontSize: '14px', color: 'grey' }}>
@@ -177,6 +188,41 @@ const TableView = () => {
           </div>
           </div>
           </>
+        )}
+        {user && user.email !== "admin@hello.com" && (
+          <div className="p-4 rounded-lg my-4 mb-24 w-full">
+            <h3 className="text-2xl font-semibold mb-4">Your shifts</h3>
+            
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+              {userShifts.map((shift) => (
+                <div
+                  key={shift.shift_id}
+                  className="p-4 border border-gray-300 rounded-lg shadow-sm bg-white"
+                >
+                  <div className="mb-2">
+                    <span className="block text-lg font-medium">
+                      {new Date(shift.date).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </span>
+                    <span className="block text-gray-500">
+                      7:30PM - 8:00PM
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <button
+                      className="bg-white text-black border border-bg-gray-800 hover:bg-gray-200 py-1 px-3 rounded-md text-sm"
+                      onClick={() => requestSwap(shift.shift_id)}
+                    >
+                      Request Swap
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
         <span className="text-lg font-semibold mb-4 text-green-800">SCHEDULED FOR TODAY: <span className="bg-backy text-white px-2 py-1 rounded-full">{todayVolunteers.length > 0 ? todayVolunteers : 'No volunteers scheduled for today'}</span></span>
         <span className="text-lg font-semibold bg-greeny py-1 px-4 rounded-md">Week {currentWeek}</span> {/* Week text */}

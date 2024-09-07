@@ -21,6 +21,7 @@ model Shift {
   week        Int
   date        DateTime
   UserShifts  UserShift[]
+  Swaps       Swaps[]   
 }
 
 model UserShift {
@@ -51,4 +52,17 @@ model ClockOut {
   tasksCompleted  String
   items           String
   reachOut        String
+}
+
+model Swaps {
+  swap_id         Int       @id @default(autoincrement())
+  date            DateTime
+  requester       String
+  requesterPhone  String
+  reason          String
+  shift_id        Int
+
+  Shift           Shift     @relation(fields: [shift_id], references: [shift_id])
+
+  @@index([shift_id])
 }

@@ -19,7 +19,14 @@ const TableView = () => {
   const [todayVolunteers, setTodayVolunteers] = useState('');
   const [nextShift, setNextShift] = useState<any>(null);
   const [username, setUsername] = useState('');
+  const [userPhone, setUserPhone] = useState('');
   const [userShifts, setUserShifts] = useState<any[]>([]);
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
+  const [swapReason, setSwapReason] = useState('');
+  const [swapShiftId, setSwapShiftId] = useState<number | null>(null);
+  const [swapShiftDate, setSwapShiftDate] = useState<string | null>(null); 
+  const [swaps, setSwaps] = useState<any[]>([]);
+
 
   const user = useAuth();
   const router = useRouter();
@@ -74,19 +81,31 @@ const TableView = () => {
       .catch(error => console.error('Error fetching shifts:', error));
   };
 
+  // Fetch swaps data from the server
+  const fetchSwaps = () => {
+    fetch(`/api/getSwaps`)
+      .then(response => response.json())
+      .then(data => {
+        setSwaps(data);
+      })
+      .catch(error => console.error('Error fetching swaps:', error));
+  };
+
   useEffect(() => {
 
     if (user) {
-      // fetch specific info of logged-in user (specifically their username)
+      // fetch specific info of logged-in user 
       fetch(`/api/getUserInfo?email=${user.email}`)
         .then(response => response.json())
         .then(data => {
           setUsername(data.username);
+          setUserPhone(data.phone);
         })
         .catch(error => console.error('Error fetching user data:', error));
     }
 
     fetchShifts();
+    fetchSwaps();
 
     fetch(`/api/users`)
       .then(response => response.json())
@@ -143,16 +162,48 @@ const TableView = () => {
     }
   };
 
-  const requestSwap = (shiftId: number) => {
-    // Implement the logic for requesting a shift swap
-    console.log(`Requesting swap for shift ID: ${shiftId}`);
+  const requestSwap = (shiftId: number, shiftDate: any) => {
+    setSwapShiftId(shiftId);
+    setSwapShiftDate(shiftDate);
+    setIsSwapModalOpen(true);
+  };
+
+  const handleSwapSubmit = async () => {
+    if (!swapShiftId || !swapReason) {
+      console.error('Missing swapShiftId or swapReason');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/addToSwap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: swapShiftDate,
+          requester: username,
+          requesterPhone: userPhone,
+          reason: swapReason,
+          shift_id: swapShiftId,
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Swap request submitted successfully');
+        setIsSwapModalOpen(false);
+      } else {
+        console.error('Failed to submit swap request:', await response.json());
+      }
+    } catch (error) {
+      console.error('Error submitting swap request:', error);
+    }
   };
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <NavBar />
 
-      <div className="flex flex-col items-start mb-4"> {/* Changed to items-start for left alignment */}
+      {/* Welcome box */}
+      <div className="flex flex-col items-start mb-4"> 
         {user && user.email !== "admin@hello.com" && (
           <>
           <h1 className="text-4xl font-bold mb-4">Welcome back, {username} 👋 </h1>
@@ -189,8 +240,11 @@ const TableView = () => {
           </div>
           </>
         )}
+
+
+        {/* Your shifts section */}
         {user && user.email !== "admin@hello.com" && (
-          <div className="p-4 rounded-lg my-4 mb-24 w-full">
+          <div className="p-4 rounded-lg my-4 mb-4 w-full">
             <h3 className="text-2xl font-semibold mb-4">Your shifts</h3>
             
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
@@ -214,7 +268,7 @@ const TableView = () => {
                   <div className="flex items-center justify-between mt-2">
                     <button
                       className="bg-white text-black border border-bg-gray-800 hover:bg-gray-200 py-1 px-3 rounded-md text-sm"
-                      onClick={() => requestSwap(shift.shift_id)}
+                      onClick={() => requestSwap(shift.shift_id, shift.date)}
                     >
                       Request Swap
                     </button>
@@ -224,6 +278,80 @@ const TableView = () => {
             </div>
           </div>
         )}
+        {isSwapModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Enter reason you can't make the shift below</h3>
+              <div className="mt-2 px-7 py-3">
+                <input
+                  type="text"
+                  className="form-input mt-1 block w-full"
+                  value={swapReason}
+                  onChange={(e) => setSwapReason(e.target.value)}
+                />
+              </div>
+              <div className="items-center px-4 py-3">
+                <button
+                  className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
+                  onClick={handleSwapSubmit}
+                >
+                  Submit
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-100 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                  onClick={() => setIsSwapModalOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+        {/* Available swaps section */}
+        {user && user.email !== "admin@hello.com" && (
+        <div className="p-4 rounded-lg my-4 mb-24 w-full">
+          <h3 className="text-2xl font-semibold mb-4">Shifts that volunteers have requested to swap</h3>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {swaps.map((swap) => (
+            <div
+              key={swap.swap_id}
+              className="p-4 border border-gray-300 rounded-lg shadow-sm bg-white"
+            >
+              <div className="mb-2">
+                <span className="block text-lg font-medium">
+                  {new Date(swap.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </span>
+                <span className="block text-gray-500">
+                  {swap.requester}
+                </span>
+                <span className="block text-gray-500">
+                  {swap.requesterPhone}
+                </span>
+                <span className="block text-gray-500 mb-2">
+                  {swap.reason}
+                </span>
+                <button
+                  className="bg-white text-black border border-bg-gray-800 hover:bg-gray-200 py-1 px-3 rounded-md text-sm"
+                >
+                  Take This Shift
+                </button>
+              </div>
+            </div>
+            ))}
+          </div>
+        </div>
+        )}
+
+
+        {/* The actual table */}
         <span className="text-lg font-semibold mb-4 text-green-800">SCHEDULED FOR TODAY: <span className="bg-backy text-white px-2 py-1 rounded-full">{todayVolunteers.length > 0 ? todayVolunteers : 'No volunteers scheduled for today'}</span></span>
         <span className="text-lg font-semibold bg-greeny py-1 px-4 rounded-md">Week {currentWeek}</span> {/* Week text */}
       </div>
@@ -329,6 +457,7 @@ const TableView = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

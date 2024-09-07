@@ -25,7 +25,7 @@ export default async function handler(req: any, res: any) {
         include: {
           UserShifts: {
             include: {
-              User: true // Include user details in the response
+              User: true 
             }
           }
         }
@@ -47,7 +47,7 @@ export default async function handler(req: any, res: any) {
             user_id: parseInt(user_id, 10)
           },
           include: {
-            User: true // Include user details in the response
+            User: true 
           }
         });
 

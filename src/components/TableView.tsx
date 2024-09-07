@@ -20,6 +20,7 @@ const TableView = () => {
   const [nextShift, setNextShift] = useState<any>(null);
   const [username, setUsername] = useState('');
   const [userPhone, setUserPhone] = useState('');
+  const [userId, setUserId] = useState<number | null>(null);
   const [userShifts, setUserShifts] = useState<any[]>([]);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
   const [swapReason, setSwapReason] = useState('');
@@ -31,7 +32,6 @@ const TableView = () => {
   const user = useAuth();
   const router = useRouter();
 
-  // Function to check if the user is an admin
   const isAdmin = user && user.email === "admin@hello.com";
 
   // Fetch shifts data from the server
@@ -42,7 +42,7 @@ const TableView = () => {
     fetch(`/api/shifts`)
       .then(response => response.json())
       .then(data => {
-        console.log('Raw data:', data); // Log raw data
+        console.log('Raw data:', data);
   
         const sortedData = data.sort((a: any, b: any) => Number(new Date(a.date)) - Number(new Date(b.date)));
         const formattedData = sortedData.map((shift: any) => {
@@ -54,9 +54,9 @@ const TableView = () => {
           };
         });
   
-        console.log('Formatted data:', formattedData); // Log formatted data
+        console.log('Formatted data:', formattedData);
   
-        setDates(formattedData); // Continue to set all shifts
+        setDates(formattedData); 
   
         // Filter out today's shifts for displaying today's volunteers
         const todayShifts = formattedData.filter((shift: any) => {
@@ -100,6 +100,16 @@ const TableView = () => {
         .then(data => {
           setUsername(data.username);
           setUserPhone(data.phone);
+          setUserId(data.user_id);
+
+        // Check for default username and empty phone number
+        if (data.username === "NEWUSER") {
+          alert("Please change your username from the Profile section!");
+        }
+        if (!data.phone) {
+          alert("Please set your phone number in the Profile section!");
+        }
+
         })
         .catch(error => console.error('Error fetching user data:', error));
     }
@@ -190,11 +200,40 @@ const TableView = () => {
       if (response.ok) {
         console.log('Swap request submitted successfully');
         setIsSwapModalOpen(false);
+        fetchSwaps(); 
       } else {
         console.error('Failed to submit swap request:', await response.json());
       }
     } catch (error) {
       console.error('Error submitting swap request:', error);
+    }
+  };
+
+  const handleAcceptSwap = async (swap: any) => {
+    if (swap.requester === username) {
+      alert("You cannot swap shifts with yourself!");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/acceptSwap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          swap_id: swap.swap_id,
+          new_user_id: userId // Assuming user object contains user_id
+        }),
+      });
+
+      if (response.ok) {
+        alert("Shift swap accepted successfully")
+        fetchSwaps(); // Refresh the swaps list
+        fetchShifts(); // Refresh the shifts list
+      } else {
+        console.error('Failed to accept shift swap:', await response.json());
+      }
+    } catch (error) {
+      console.error('Error accepting shift swap:', error);
     }
   };
 
@@ -340,6 +379,7 @@ const TableView = () => {
                 </span>
                 <button
                   className="bg-white text-black border border-bg-gray-800 hover:bg-gray-200 py-1 px-3 rounded-md text-sm"
+                  onClick={() => handleAcceptSwap(swap)}
                 >
                   Take This Shift
                 </button>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase-config";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebase-config";
 import { useRouter } from 'next/router';
 
 const daysOfWeek = [
@@ -73,6 +73,35 @@ const Login = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      router.push('/');
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Check if user exists in the database
+      const response = await fetch(`/api/getUserInfo?email=${user.email}`);
+      if (response.status === 404) {
+        // User does not exist, create a new user with default username
+        await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: 'NEWUSER',
+            email: user.email,
+            phone: '',
+            availability: '',
+          }),
+        });
+      }
+
       router.push('/');
     } catch (error: any) {
       setError(error.message);
@@ -171,7 +200,7 @@ const Login = () => {
           )}
           <div className="text-center mb-6">
             <span className="block text-gray-500 text-sm mb-4">OR</span>
-            <button type="button" className="py-3 px-24 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-300 bg-white shadow-sm text-black hover:bg-gray-200">
+            <button type="button" className="py-3 px-24 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-300 bg-white shadow-sm text-black hover:bg-gray-200" onClick={handleGoogleSignIn}>
               <svg className="w-4 h-auto" width="46" height="47" viewBox="0 0 46 47" fill="none">
                 <path d="M46 24.0287C46 22.09 45.8533 20.68 45.5013 19.2112H23.4694V27.9356H36.4069C36.1429 30.1094 34.7347 33.37 31.5957 35.5731L31.5663 35.8669L38.5191 41.2719L38.9885 41.3306C43.4477 37.2181 46 31.1669 46 24.0287Z" fill="#4285F4"/>
                 <path d="M23.4694 47C29.8061 47 35.1161 44.9144 39.0179 41.3012L31.625 35.5437C29.6301 36.9244 26.9898 37.8937 23.4987 37.8937C17.2793 37.8937 12.0281 33.7812 10.1505 28.1412L9.88649 28.1706L2.61097 33.7812L2.52296 34.0456C6.36608 41.7125 14.287 47 23.4694 47Z" fill="#34A853"/>

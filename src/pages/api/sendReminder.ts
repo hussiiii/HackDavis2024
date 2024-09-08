@@ -14,11 +14,13 @@ export default async function handler(req: any, res: any) {
     const phone = '+14158123737';
     const message = 'mmmmmmmmmm';
     try {
-      await axios.post(`${BASE_URL}/send`, {
-        api_key: API_KEY,
-        device_id: DEVICE_ID,
-        phone,
+      await axios.post(`${BASE_URL}/gateway/devices/${DEVICE_ID}/sendSMS`, {
+        recipients: [phone],  // Send as an array
         message,
+      }, {
+        headers: {
+          'x-api-key': API_KEY,  // Include the API key in the headers
+        },
       });
       console.log(`Test message sent to ${phone}`);
     } catch (error) {

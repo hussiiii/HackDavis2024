@@ -104,7 +104,7 @@ const TableView = () => {
 
         // Check for default username and empty phone number
         if (data.username === "NEWUSER") {
-          alert("Please change your username from the Profile section!");
+          alert("Please change your username to your name from the Profile section!");
         }
         if (!data.phone) {
           alert("Please set your phone number in the Profile section!");

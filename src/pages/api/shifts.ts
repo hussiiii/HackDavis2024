@@ -1,11 +1,39 @@
 import { PrismaClient } from '@prisma/client';
-import axios from 'axios';
+import Client from 'android-sms-gateway';
 
 const prisma = new PrismaClient();
 
-const BASE_URL = 'https://api.textbee.dev/api/v1';
-const API_KEY = "5218660c-17f3-4f11-a656-87ec63221d0b";
-const DEVICE_ID = "669725cb3d552f16138d22e1";
+// Example of an HTTP client based on fetch
+const httpFetchClient = {
+    get: async (url:any, headers:any) => {
+        const response = await fetch(url, {
+            method: "GET",
+            headers
+        });
+
+        return response.json();
+    },
+    post: async (url:any, body:any, headers:any) => {
+        const response = await fetch(url, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(body)
+        });
+
+        return response.json();
+    },
+    delete: async (url:any, headers:any) => {
+        const response = await fetch(url, {
+            method: "DELETE",
+            headers
+        });
+
+        return response.json();
+    }
+};
+
+// Initialize the client with your API credentials
+const apiClient = new Client('ENMXTB', 'aynr5jzflgne8x', httpFetchClient);
 
 export default async function handler(req: any, res: any) {
   switch (req.method) {
@@ -58,13 +86,10 @@ export default async function handler(req: any, res: any) {
         });
 
         if (shift && user.phone) {
-          await axios.post(`${BASE_URL}/gateway/devices/${DEVICE_ID}/sendSMS`, {
-            recipients: [user.phone],
-            message: `AggieHouse: Hello ${user.username}, you have been scheduled for a shift on ${new Date(shift.date).toLocaleDateString()}.`
-          }, {
-            headers: {
-              'x-api-key': API_KEY,
-            },
+          const message = `AggieHouse: Hello ${user.username}, you have been scheduled for a shift on ${new Date(shift.date).toLocaleDateString()}.`;
+          await apiClient.send({
+            phoneNumbers: [user.phone],
+            message
           });
         }
     

@@ -1,7 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import Client from 'android-sms-gateway';
+import { formatInTimeZone } from 'date-fns-tz';
+
 
 const prisma = new PrismaClient();
+const PST_TIMEZONE = 'America/Los_Angeles'; 
+
 
 // Example of an HTTP client based on fetch
 const httpFetchClient = {
@@ -86,7 +90,8 @@ export default async function handler(req: any, res: any) {
         });
 
         if (shift && user.phone) {
-          const message = `AggieHouse: Hello ${user.username}, you have been scheduled for a shift on ${new Date(shift.date).toLocaleDateString()}.`;
+          const formattedShiftDate = formatInTimeZone(new Date(shift.date), PST_TIMEZONE, 'MM-dd-yyyy');
+          const message = `AggieHouse: Hello ${user.username}, you have been scheduled for a shift on ${formattedShiftDate}.`;
           await apiClient.send({
             phoneNumbers: [user.phone],
             message

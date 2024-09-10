@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import NavBar from '@/components/NavBar';
 import Footer from './Footer';
+import { AnyAaaaRecord } from 'dns';
 
 const TableView = () => {
   const [dates, setDates] = useState<any[]>([]);
@@ -27,7 +28,7 @@ const TableView = () => {
   const [swapShiftId, setSwapShiftId] = useState<number | null>(null);
   const [swapShiftDate, setSwapShiftDate] = useState<string | null>(null); 
   const [swaps, setSwaps] = useState<any[]>([]);
-
+  const [availableUsers, setAvailableUsers] = useState<any[]>([]);
 
   const user = useAuth();
   const router = useRouter();
@@ -89,6 +90,19 @@ const TableView = () => {
         setSwaps(data);
       })
       .catch(error => console.error('Error fetching swaps:', error));
+  };
+
+  const fetchAvailableUsers = (shiftDate: string) => {
+    fetch(`/api/getAvailableUsers?date=${shiftDate}`)
+      .then(response => response.json())
+      .then(data => setAvailableUsers(data))
+      .catch(error => console.error('Error fetching available users:', error));
+  };
+
+  const openModal = (shiftId: any, shiftDate: any) => {
+    setEditingShiftId(shiftId);
+    fetchAvailableUsers(shiftDate);
+    setIsModalOpen(true);
   };
 
   useEffect(() => {
@@ -443,7 +457,7 @@ const TableView = () => {
           {isAdmin && (
             <button
               className="bg-green-200 hover:bg-green-400 text-black px-12 py-1 rounded-full text-black"
-              onClick={() => { setIsModalOpen(true); setEditingShiftId(shift.shift_id); }}
+              onClick={() => openModal(shift.shift_id, shift.date)}
             >
               Add
             </button>
@@ -465,38 +479,45 @@ const TableView = () => {
         </button>
       </div>
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" id="my-modal">
-          <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3 text-center">
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                {/* Icon or image can go here */}
-              </div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Assign Volunteer</h3>
-              <div className="mt-2 px-7 py-3">
-                <select onChange={(e) => setSelectedUser(e.target.value)} className="form-select block w-full mt-1 border-gray-300">
-                  {users.filter(user => user.username !== "Admin").map(user => (
-                    <option key={user.user_id} value={user.user_id}>{user.username}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="items-center px-4 py-3">
-                <button
-                  className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
-                  onClick={assignVolunteer}
-                >
-                  Confirm
-                </button>
-                <button
-                  className="px-4 py-2 bg-red-100 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Close
-                </button>
-              </div>
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" id="my-modal">
+        <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="mt-3 text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+              {/* Icon or image can go here */}
+            </div>
+            <h3 className="text-lg leading-6 font-medium text-gray-900">Assign Volunteer</h3>
+            <div className="mt-2 px-7 py-3">
+              <select onChange={(e) => setSelectedUser(e.target.value)} className="form-select block w-full mt-1 border-gray-300">
+                <option value="">Select a volunteer</option>
+                {users.filter(user => user.username !== "Admin").map(user => (
+                  <option key={user.user_id} value={user.user_id}>{user.username}</option>
+                ))}
+              </select>
+              <select onChange={(e) => setSelectedUser(e.target.value)} className="form-select block w-full mt-1 border-gray-300">
+                <option value="">Select an available volunteer</option>
+                {availableUsers.map(user => (
+                  <option key={user.user_id} value={user.user_id}>{user.username}</option>
+                ))}
+              </select>
+            </div>
+            <div className="items-center px-4 py-3">
+              <button
+                className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
+                onClick={assignVolunteer}
+              >
+                Confirm
+              </button>
+              <button
+                className="px-4 py-2 bg-red-100 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
     </div>
   );

@@ -1,17 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebase-config";
 import { useRouter } from 'next/router';
 
-const daysOfWeek = [
-  { name: 'Sunday', value: '1' },
-  { name: 'Monday', value: '2' },
-  { name: 'Tuesday', value: '3' },
-  { name: 'Wednesday', value: '4' },
-  { name: 'Thursday', value: '5' },
-  { name: 'Friday', value: '6' },
-  { name: 'Saturday', value: '7' },
-];
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -20,23 +11,36 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [isCreatingAccount, setIsCreatingAccount] = useState(false);
-  const [availableDays, setAvailableDays] = useState<string[]>([]);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+
 
   const router = useRouter();
+
+  useEffect(() => {
+    // Fetch available dates from the Shift table
+    fetch('/api/shifts')
+      .then(response => response.json())
+      .then(data => {
+        const dates = data.map((shift: any) => new Date(shift.date));
+        setAvailableDates(dates);
+      })
+      .catch(error => console.error('Error fetching shifts:', error));
+  }, []);
 
   const handleToggle = () => {
     setIsCreatingAccount((prev) => !prev);
   };
 
-  const handleCheckboxChange = (day: string) => {
-    setAvailableDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+  const handleCheckboxChange = (date: string) => {
+    setSelectedDates((prev) =>
+      prev.includes(date) ? prev.filter((d) => d !== date) : [...prev, date]
     );
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); // Reset error message on new submission
+    setError(''); 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -53,7 +57,7 @@ const Login = () => {
           username,
           email: user.email,
           phone: formattedPhone,
-          availability: availableDays.join(''),
+          availability: selectedDates
         }),
       });
 
@@ -69,7 +73,7 @@ const Login = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(''); // Reset error message on new submission
+    setError(''); 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -180,17 +184,17 @@ const Login = () => {
                   I am generally free on...
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  {daysOfWeek.map((day) => (
-                    <div key={day.value} className="flex items-center">
+                  {availableDates.map((date) => (
+                    <div key={date.toISOString()} className="flex items-center">
                       <input
                         type="checkbox"
-                        id={day.name}
-                        value={day.value}
-                        onChange={() => handleCheckboxChange(day.value)}
+                        id={date.toISOString()}
+                        value={date.toISOString()}
+                        onChange={() => handleCheckboxChange(date.toISOString())}
                         className="mr-2"
                       />
-                      <label htmlFor={day.name} className="text-gray-700 text-sm">
-                        {day.name}
+                      <label htmlFor={date.toISOString()} className="text-gray-700 text-sm">
+                        {date.toLocaleDateString()}
                       </label>
                     </div>
                   ))}

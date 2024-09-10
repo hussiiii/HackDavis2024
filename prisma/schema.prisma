@@ -12,8 +12,17 @@ model User {
   username    String    @unique
   email       String    @unique
   phone       String?   @unique
-  availability String?  @default("") 
   UserShifts  UserShift[]
+  availabilities UserAvailability[]
+}
+
+model UserAvailability {
+  id          Int       @id @default(autoincrement())
+  date        DateTime
+  user_id     Int
+  User        User      @relation(fields: [user_id], references: [user_id])
+
+  @@unique([date, user_id])
 }
 
 model Shift {

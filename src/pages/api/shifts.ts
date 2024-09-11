@@ -2,10 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import Client from 'android-sms-gateway';
 import { formatInTimeZone } from 'date-fns-tz';
 
-
 const prisma = new PrismaClient();
-const PST_TIMEZONE = 'America/Los_Angeles'; 
-
+const PST_TIMEZONE = 'America/Los_Angeles';
 
 // Example of an HTTP client based on fetch
 const httpFetchClient = {
@@ -83,6 +81,9 @@ export default async function handler(req: any, res: any) {
           }
         });
 
+        // Log user and shift details
+        console.log('User assigned to shift:', newAssignment);
+
         // Send SMS notification
         const user = newAssignment.User;
         const shift = await prisma.shift.findUnique({
@@ -92,10 +93,19 @@ export default async function handler(req: any, res: any) {
         if (shift && user.phone) {
           const formattedShiftDate = formatInTimeZone(new Date(shift.date), PST_TIMEZONE, 'MM-dd-yyyy');
           const message = `AggieHouse: Hello ${user.username}, you have been scheduled for a shift on ${formattedShiftDate}.`;
-          await apiClient.send({
+          
+          // Log the message details
+          console.log('Sending SMS to:', user.phone, 'Message:', message);
+
+          const smsResponse = await apiClient.send({
             phoneNumbers: [user.phone],
             message
           });
+
+          // Log the response from the SMS API
+          console.log('SMS API response:', smsResponse);
+        } else {
+          console.log('Shift or user phone number not found:', { shift, user });
         }
     
         // Optionally, you might want to return the updated list of all volunteers for the shift

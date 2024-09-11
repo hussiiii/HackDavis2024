@@ -332,36 +332,37 @@ const TableView = () => {
           </div>
         )}
         {isSwapModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3 text-center">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Enter reason you cannot make the shift below</h3>
-              <div className="mt-2 px-7 py-3">
-                <input
-                  type="text"
-                  className="form-input mt-1 block w-full"
-                  value={swapReason}
-                  onChange={(e) => setSwapReason(e.target.value)}
-                />
-              </div>
-              <div className="items-center px-4 py-3">
-                <button
-                  className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
-                  onClick={handleSwapSubmit}
-                >
-                  Submit
-                </button>
-                <button
-                  className="px-4 py-2 bg-red-100 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
-                  onClick={() => setIsSwapModalOpen(false)}
-                >
-                  Close
-                </button>
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+            <div className="relative p-5 border w-2/5 shadow-lg rounded-md bg-white">
+              <div className="mt-3 text-center">
+                <h3 className="text-lg font-medium text-gray-900">Reason for missing shift: </h3>
+                <div className="mt-2 px-7 py-3">
+                  <input
+                    type="text"
+                    placeholder="Enter response"
+                    className="form-input mt-1 block w-full border border-gray-300 rounded-md py-2 px-3"
+                    value={swapReason}
+                    onChange={(e) => setSwapReason(e.target.value)}
+                  />
+                </div>
+                <div className="flex justify-between items-center px-4 py-3">
+                  <button
+                    className="px-2 py-2 bg-white border border-gray-200 hover:bg-gray-400 text-black font-medium rounded-md shadow-sm w-1/2 mr-2"
+                    onClick={() => setIsSwapModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-2 py-2 bg-backy text-white hover:bg-gray-600 font-medium rounded-md shadow-sm w-1/2 ml-2"
+                    onClick={handleSwapSubmit}
+                  >
+                    Submit
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
 
         {/* Available swaps section */}
@@ -479,45 +480,71 @@ const TableView = () => {
         </button>
       </div>
       {isModalOpen && (
-      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" id="my-modal">
-        <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white">
-          <div className="mt-3 text-center">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-              {/* Icon or image can go here */}
-            </div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Assign Volunteer</h3>
-            <div className="mt-2 px-7 py-3">
-              <select onChange={(e) => setSelectedUser(e.target.value)} className="form-select block w-full mt-1 border-gray-300">
-                <option value="">Select a volunteer</option>
-                {users.filter(user => user.username !== "Admin").map(user => (
-                  <option key={user.user_id} value={user.user_id}>{user.username}</option>
-                ))}
-              </select>
-              <select onChange={(e) => setSelectedUser(e.target.value)} className="form-select block w-full mt-1 border-gray-300">
-                <option value="">Select an available volunteer</option>
-                {availableUsers.map(user => (
-                  <option key={user.user_id} value={user.user_id}>{user.username}</option>
-                ))}
-              </select>
-            </div>
-            <div className="items-center px-4 py-3">
-              <button
-                className="mb-2 px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
-                onClick={assignVolunteer}
-              >
-                Confirm
-              </button>
-              <button
-                className="px-4 py-2 bg-red-100 text-white text-base font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Close
-              </button>
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" id="my-modal">
+          <div className="relative p-6 border w-96 shadow-lg rounded-lg bg-white">
+            <div className="mt-3 text-center">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Assign Volunteer</h3>
+
+              <div className="mt-4 px-7 py-3">
+                <label className="block text-left text-sm font-medium text-gray-700 mb-2">
+                  Available Volunteers
+                </label>
+                <div className="relative">
+                  <select
+                    onChange={(e) => setSelectedUser(e.target.value)}
+                    className="form-select block w-full mt-1 border border-gray-300 rounded-lg shadow-sm sm:text-sm py-2"
+                  >
+                    <option value="">Select Option</option>
+                    {availableUsers.map(user => (
+                      <option key={user.user_id} value={user.user_id}>
+                        <div className="flex items-center">
+                          {user.username}
+                        </div>
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 px-7 py-3">
+                <label className="block text-left text-sm font-medium text-gray-700 mb-2">
+                  All Volunteers
+                </label>
+                <div className="relative">
+                  <select
+                    onChange={(e) => setSelectedUser(e.target.value)}
+                    className="form-select block w-full mt-1 border border-gray-300 rounded-lg shadow-sm sm:text-sm py-2"
+                  >
+                    <option value="">Select Option</option>
+                    {users.filter(user => user.username !== "Admin").map(user => (
+                      <option key={user.user_id} value={user.user_id}>
+                        <div className="flex items-center">
+                          {user.username}
+                        </div>
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center px-4 py-3">
+                <button
+                  className="mr-5 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-400 text-black font-medium rounded-md w-1/2 ml-2 shadow-sm"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Close
+                </button>
+                <button
+                  className="px-4 py-2 bg-backy text-white hover:bg-gray-600 font-medium rounded-md w-1/2 shadow-sm"
+                  onClick={assignVolunteer}
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
     </div>
   );

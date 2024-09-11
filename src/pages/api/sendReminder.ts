@@ -1,3 +1,7 @@
+// This uses cron-job.org to run this every day at 12:00 AM PST
+
+
+
 import { PrismaClient } from '@prisma/client';
 import { formatInTimeZone } from 'date-fns-tz';
 import Client from 'android-sms-gateway';

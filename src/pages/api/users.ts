@@ -41,8 +41,25 @@ export default async function handler(req: any, res: any) {
         return res.status(500).json({ error: 'Failed to fetch users', details: error.message });
       }
 
+      case 'DELETE':
+        try {
+          const { user_id } = req.query;
+
+          // Delete user by user_id
+          const deletedUser = await prisma.user.delete({
+            where: {
+              user_id: Number(user_id),
+            },
+          });
+
+          return res.status(200).json({ message: 'User deleted successfully', deletedUser });
+        } catch (error: any) {
+          console.error('Error deleting user:', error);
+          return res.status(500).json({ error: 'Failed to delete user', details: error.message });
+        }
+
     default:
-      res.setHeader('Allow', ['GET', 'POST']);
+      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
       return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

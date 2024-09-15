@@ -36,7 +36,7 @@ const NavBar = () => {
               U
             </div>
           )}
-          
+
           {/* Dropdown Menu */}
           <div className="absolute right-0 top-full w-48 bg-white border border-gray-200 rounded-lg shadow-lg hidden group-hover:block z-10">
             <div className="py-2">
@@ -44,7 +44,7 @@ const NavBar = () => {
                 {'Menu'}
               </div>
               <hr className="border-t border-gray-300" />
-              <button 
+              <button
                 onClick={() => router.push('/profile')}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
@@ -52,21 +52,27 @@ const NavBar = () => {
               </button>
               {isAdmin && (
                 <>
-                  <button 
+                  <button
                     onClick={() => router.push('/clockin-sheet')}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Clock In Sheet
                   </button>
-                  <button 
+                  <button
                     onClick={() => router.push('/clockout-sheet')}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Clock Out Sheet
                   </button>
+                  <button
+                    onClick={() => router.push('/manage-users')}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Manage Users
+                  </button>
                 </>
               )}
-              <button 
+              <button
                 onClick={logOut}
                 className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
               >

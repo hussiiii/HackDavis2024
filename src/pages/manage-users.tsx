@@ -37,25 +37,25 @@ const ManageUsersPage = () => {
       fetchUsers();
     }, []);
 
-  const removeUser = async (userId: any) => {
-    try {
-      const response = await fetch(`/api/users?user_id=${userId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('User deleted:', data);
-
-        // Update state to remove user
-        setUsers((prevUsers) => prevUsers.filter((user) => user.user_id !== userId));
-      } else {
-        console.error('Failed to delete user:', response.statusText);
+    const removeUser = async (userId: any, email: string) => {
+      try {
+        const response = await fetch(`/api/users?user_id=${userId}&email=${email}`, {
+          method: 'DELETE',
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log('User deleted:', data);
+  
+          // Update state to remove user
+          setUsers((prevUsers) => prevUsers.filter((user) => user.user_id !== userId));
+        } else {
+          console.error('Failed to delete user:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error during deletion:', error);
       }
-    } catch (error) {
-      console.error('Error during deletion:', error);
     }
-  }
 
   if (loading) {
     return <div>Loading...</div>;
@@ -88,7 +88,7 @@ const ManageUsersPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <button
                         className="text-red-500 hover:text-red-700 font-semibold"
-                        onClick={() => removeUser(user.user_id)}
+                        onClick={() => removeUser(user.user_id, user.email)}
                       >
                         Remove
                       </button>

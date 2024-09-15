@@ -1,0 +1,13 @@
+import admin from 'firebase-admin';
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: `aggiehouse-2b485`,
+      clientEmail: `firebase-adminsdk-lo4mf@aggiehouse-2b485.iam.gserviceaccount.com`,
+      privateKey: `-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDD8pg68mgoJb6p\nSo7XO713k/1AFHUo95bhqbeuMJTCnXErjU/mAZ9vo2u6/s46x/q7BW7zKMvcX1i2\nKfUD5P7GgianI2m+fgMOJhkWEIb0+rDEfhGsf2yx0wMLdsyd7wtwqbwbZB/C70VJ\nIwhD8TKH7YkomjaKmhy76LM471sBIR8Wsp3TuQTYSi7j+uJgEaoxG13dt3JrBsf5\nUx+1N1FbJhLndWEh2QH5/+ofiRaTbPuit1xcIKumMVhoEdtwkG6fzjJVKm1JDd2Q\nYc1oGLF7Y7w+qdJKg08/6AlyAZyRtKX0Y6Ds1oWEHMLHTbCjI/G3JZjpgMB0tYDc\nCs42WVjNAgMBAAECggEAG7lAuaJfg0Kn4br3T9OXgIozPDRIyVWShvYk02PzQD/X\nacKSKehT3w8/qFLx6dYujvR7WLMOeO0Sl5+DF5x4QazbfC1iAj5A/2j7hqgq+BFa\nHkr6BC55OgWxehdCZxwRwcx6HWQCrGl/I5Rt0HMZY6sDi3eaPO0GIL4RUX5oIVYH\nZMpO3azh/w/fPk3B97DyRPWSQRYlEh2bJ4dTo726qRMtclV5g672uWIFK3+AmVSh\nuuhDn4ysxZVy6MqaELuy9WLhNautjIUxnm3qRQ4LObdSSOTvxwD6IwnT02WeOgH8\n5tcxh0jnw13gWPKKwa3oRhYdUCc1fg9AURChjqRljwKBgQDrFSn084ipJ19JwwPt\nB74vUbvU3YvExIRDGbKv4/ze1+dwdvUgAmF/9EOkg3E1XqjoBIFtipP9tDS9D8l5\nzhC7xTwYGu2WkCYTsd/BrQd+6LblQZSBGGyJ9CNt4OMAGvYis4tLOHrgZ1ovTaRH\ncPEVBHd5q4f0408PBgCCNZ5bQwKBgQDVYf4PgshMAs7dLDOJrFdYo/3dN1JI1KqZ\nYgk77NqwnBG3AerQS9ynfcxTJrX9s+WT8PsuXV1Zf1mev3SZsstawK2quqXiE+V6\nudfK2f5uCNaciRDvvT4fbG4Lf9ocbQUjRuqS5j+X6HAlGesgm3AV1X9iMvuplpj/\n0WdHbRTSrwKBgHBkZPPkv1DILymP4D+h9Q6gkCH8bgd8QRPnpGOtp8dPCCrf5OAR\n41WOjgyIf0aZ5D1RciPSHmEsmA5QDu56U8vCR7Hqpe7XKi0+XJE3TZ8iWdcP3JU/\n/RyTqaCt5Tm2qjj7CDzFWxIQt7Bn+YPifpCi2xBDrzOovbKcFwAp7HULAoGARJ8i\n6TIR3//3LsGMQXYfEO6MMZwc5jceNf2FIrRlD+7g8422Sg5bg7G9B/CnDlPQPOd+\nn8Z+ws1lsNu5T8RkCWd1cjZcKnxjjDg/4YiBfjlxax3ZSH//fnOMYD5ZklKtGE8y\nGNPbF6s0hXn0V6QlQ6BJOvdSX5OC2KIrKJk33RkCgYEAk/1HbM9FvtXhoqbpWGbE\njVhJjFbCrnv0Zbfck6pjWpJAYlHmXOFWp+NLmtnaYPMlzK9kartJWEqqK1NFuQoe\ndBMZd7YxUToGgww3d+JNEHtw2WFyy+FYHGKAbe8PNRI6vzXPiTx6m2K8woAHL2jh\nS1WFviKE+h6HBCcb8wnVHGI=\n-----END PRIVATE KEY-----\n`,
+    }),
+  });
+}
+
+export default admin;

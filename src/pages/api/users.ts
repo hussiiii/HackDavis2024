@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import admin from '../../firebase-admin-config';
+
 
 const prisma = new PrismaClient();
 
@@ -43,23 +45,35 @@ export default async function handler(req: any, res: any) {
 
       case 'DELETE':
         try {
-          const { user_id } = req.query;
-
-          // Delete user by user_id
+          const { user_id, email } = req.query;
+  
+          // Delete user by user_id from Prisma
           const deletedUser = await prisma.user.delete({
             where: {
               user_id: Number(user_id),
             },
           });
-
+  
+          // Delete user from Firebase Authentication
+          await admin.auth().getUserByEmail(email)
+            .then((userRecord) => {
+              return admin.auth().deleteUser(userRecord.uid);
+            })
+            .then(() => {
+              console.log('Successfully deleted user from Firebase');
+            })
+            .catch((error) => {
+              console.error('Error deleting user from Firebase:', error);
+            });
+  
           return res.status(200).json({ message: 'User deleted successfully', deletedUser });
         } catch (error: any) {
           console.error('Error deleting user:', error);
           return res.status(500).json({ error: 'Failed to delete user', details: error.message });
         }
-
-    default:
-      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
-      return res.status(405).end(`Method ${req.method} Not Allowed`);
+  
+      default:
+        res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
+        return res.status(405).end(`Method ${req.method} Not Allowed`);
+    }
   }
-}
